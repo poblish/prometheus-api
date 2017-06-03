@@ -4,16 +4,23 @@ import com.google.common.annotations.VisibleForTesting;
 import io.prometheus.client.CollectorRegistry;
 
 import java.io.Closeable;
+import java.util.Optional;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 
 // More friendly, MetricRegistry-inspired Prometheus API wrapper
 // FIXME Ideally want to inject application name into this (or create Spring wrapper)
+
 public class PrometheusMetrics {
     private final ConcurrentMap<String,Metric> metrics;
     private CollectorRegistry registry = CollectorRegistry.defaultRegistry;
+    private Properties descriptionMappings = new Properties();
 
     public PrometheusMetrics() {
         this.metrics = new ConcurrentHashMap<String,Metric>();
@@ -24,25 +31,42 @@ public class PrometheusMetrics {
         this.registry = checkNotNull(registry);
     }
 
+    @VisibleForTesting
+    public void setDescriptionMappings(final Properties props) {
+        this.descriptionMappings = checkNotNull(props);
+    }
+
     // Map Dropwizard Timer to a Prometheus Summary (I think)
     public Summary timer(String name) {
         return summary(name);
     }
 
     public Histogram histogram(String name) {
-        return getOrAdd(name, MetricBuilder.HISTOGRAMS);
+        return getOrAdd(name, empty(), MetricBuilder.HISTOGRAMS);
+    }
+
+    public Histogram histogram(String name, String desc) {
+        return getOrAdd(name, of(desc), MetricBuilder.HISTOGRAMS);
     }
 
     public Summary summary(String name) {
-        return getOrAdd(name, MetricBuilder.SUMMARIES);
+        return getOrAdd(name, empty(), MetricBuilder.SUMMARIES);
     }
 
     public Counter counter(String name) {
-        return getOrAdd(name, MetricBuilder.COUNTERS);
+        return getOrAdd(name, empty(), MetricBuilder.COUNTERS);
+    }
+
+    public Counter counter(String name, String desc) {
+        return getOrAdd(name, of(desc), MetricBuilder.COUNTERS);
     }
 
     public Gauge gauge(String name) {
-        return getOrAdd(name, MetricBuilder.GAUGES);
+        return getOrAdd(name, empty(), MetricBuilder.GAUGES);
+    }
+
+    public Gauge gauge(String name, String desc) {
+        return getOrAdd(name, of(desc), MetricBuilder.GAUGES);
     }
 
 //    public void inc(String name) {
@@ -63,14 +87,15 @@ public class PrometheusMetrics {
 //    }
 
     @SuppressWarnings("unchecked")
-    private <T extends Metric> T getOrAdd(String name, MetricBuilder<T> builder) {
+    private <T extends Metric> T getOrAdd(String name, Optional<String> desc, MetricBuilder<T> builder) {
         final Metric metric = metrics.get(name);
         if (builder.isInstance(metric)) {
             return (T) metric;
         }
         else if (metric == null) {
             try {
-                return register(name, builder.newMetric( fixIntendedName(name), name, this.registry));
+                final String description = desc.orElse( firstNonNull( descriptionMappings.getProperty(name), name) );
+                return register(name, builder.newMetric( fixIntendedName(name), description, this.registry));
             }
             catch (IllegalArgumentException e) {
                 if (e.getMessage().startsWith("Invalid metric name")) {
