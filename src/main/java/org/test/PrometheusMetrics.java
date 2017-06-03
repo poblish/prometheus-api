@@ -11,11 +11,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 // More friendly, MetricRegistry-inspired Prometheus API wrapper
 // FIXME Ideally want to inject application name into this (or create Spring wrapper)
-public class PromMetrics {
+public class PrometheusMetrics {
     private final ConcurrentMap<String,Metric> metrics;
     private CollectorRegistry registry = CollectorRegistry.defaultRegistry;
 
-    public PromMetrics() {
+    public PrometheusMetrics() {
         this.metrics = new ConcurrentHashMap<String,Metric>();
     }
 
@@ -225,6 +225,10 @@ public class PromMetrics {
             this.promMetric = promMetric;
         }
 
+        public Summary update(double value) {
+            return observe(value);
+        }
+
         public Summary observe(double value) {
             this.promMetric.observe(value);
             return this;
@@ -262,6 +266,10 @@ public class PromMetrics {
         }
 
         public Histogram update(double value) {
+            return observe(value);
+        }
+
+        public Histogram observe(double value) {
             this.promMetric.observe(value);
             return this;
         }

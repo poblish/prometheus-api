@@ -4,7 +4,7 @@ import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.TestableTimeProvider;
 import org.junit.Before;
 import org.junit.Test;
-import org.test.PromMetrics.Context;
+import org.test.PrometheusMetrics.Context;
 
 import java.util.Collections;
 
@@ -23,8 +23,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 // Support Labels?? https://github.com/prometheus/client_java#labels
 // Support Meters?? http://metrics.dropwizard.io/3.1.0/getting-started/
 
-public class PromMetricsTest {
-    private PromMetrics metrics;
+public class PrometheusMetricsTest {
+    private PrometheusMetrics metrics;
     private CollectorRegistry registry;
 
     @Before
@@ -32,7 +32,7 @@ public class PromMetricsTest {
         TestableTimeProvider.install();
 
         registry = new CollectorRegistry();
-        metrics = new PromMetrics();
+        metrics = new PrometheusMetrics();
         metrics.setCollectorRegistry(registry);
     }
 
