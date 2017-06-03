@@ -1,0 +1,8 @@
+.classpath
+.project
+.settings/
+target/
+generated_ami*/
+/.idea/
+*.iml
+/dependency-reduced-pom.xml
