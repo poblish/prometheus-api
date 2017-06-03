@@ -24,7 +24,7 @@ public class PrometheusMetrics {
         this.registry = checkNotNull(registry);
     }
 
-    // Map to a Prometheus Summary (I think)
+    // Map Dropwizard Timer to a Prometheus Summary (I think)
     public Summary timer(String name) {
         return summary(name);
     }
@@ -122,18 +122,6 @@ public class PrometheusMetrics {
                 return Gauge.class.isInstance(metric);
             }
         };
-
-//        MetricBuilder<Meter> METERS = new MetricBuilder<Meter>() {
-//            @Override
-//            public Meter newMetric(final String name) {
-//                return new Meter();
-//            }
-//
-//            @Override
-//            public boolean isInstance(Metric metric) {
-//                return Meter.class.isInstance(metric);
-//            }
-//        };
 
         MetricBuilder<Histogram> HISTOGRAMS = new MetricBuilder<Histogram>() {
             @Override
@@ -238,7 +226,7 @@ public class PrometheusMetrics {
             return new TimerContext( promMetric.startTimer() );
         }
 
-        public static class TimerContext implements Context {
+        private static class TimerContext implements Context {
 
             final io.prometheus.client.Summary.Timer requestTimer;
 
@@ -274,7 +262,7 @@ public class PrometheusMetrics {
             return this;
         }
 
-        public static class TimerContext implements Context {
+        private static class TimerContext implements Context {
 
             final io.prometheus.client.Histogram.Timer requestTimer;
 

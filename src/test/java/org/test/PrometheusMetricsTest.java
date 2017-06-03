@@ -19,9 +19,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 // Why not: metrics.timer("Test_calc1") instead of metrics.timer("Test_calc1").time() ??
 // What about quantiles?  https://github.com/prometheus/client_java#summary
 // More on Labels?  https://github.com/prometheus/client_java#labels
-// Genericise Summary and Histogram <T>
+// [rejected] Genericise Summary and Histogram <T>
 // Support Labels?? https://github.com/prometheus/client_java#labels
-// Support Meters?? http://metrics.dropwizard.io/3.1.0/getting-started/
+// [rejected] Support Meters?? http://metrics.dropwizard.io/3.1.0/getting-started/
 
 public class PrometheusMetricsTest {
     private PrometheusMetrics metrics;
