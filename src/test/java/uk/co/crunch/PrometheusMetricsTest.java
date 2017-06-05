@@ -1,4 +1,4 @@
-package org.test;
+package uk.co.crunch;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
@@ -6,8 +6,8 @@ import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.TestableTimeProvider;
 import org.junit.Before;
 import org.junit.Test;
-import org.test.api.PrometheusMetrics;
-import org.test.api.PrometheusMetrics.Context;
+import uk.co.crunch.api.PrometheusMetrics;
+import uk.co.crunch.api.PrometheusMetrics.Context;
 
 import java.io.File;
 import java.io.IOException;

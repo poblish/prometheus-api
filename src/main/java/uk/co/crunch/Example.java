@@ -1,7 +1,7 @@
-package org.test;
+package uk.co.crunch;
 
-import org.test.api.PrometheusMetrics;
-import org.test.api.PrometheusMetrics.Context;
+import uk.co.crunch.api.PrometheusMetrics;
+import uk.co.crunch.api.PrometheusMetrics.Context;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 

@@ -1,4 +1,4 @@
-package org.test.api;
+package uk.co.crunch.api;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.prometheus.client.CollectorRegistry;
