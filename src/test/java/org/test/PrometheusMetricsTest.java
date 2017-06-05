@@ -6,11 +6,11 @@ import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.TestableTimeProvider;
 import org.junit.Before;
 import org.junit.Test;
-import org.test.PrometheusMetrics.Context;
+import org.test.api.PrometheusMetrics;
+import org.test.api.PrometheusMetrics.Context;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Reader;
 import java.util.Collections;
 import java.util.Properties;

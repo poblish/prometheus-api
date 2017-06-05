@@ -1,4 +1,4 @@
-package org.test;
+package org.test.api;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.prometheus.client.CollectorRegistry;
@@ -182,7 +182,7 @@ public class PrometheusMetrics {
         void close();
     }
 
-    static class Counter implements Metric  {
+    public static class Counter implements Metric  {
 
         final private io.prometheus.client.Counter promMetric;
 
@@ -201,7 +201,7 @@ public class PrometheusMetrics {
         }
     }
 
-    static class Gauge implements Metric  {
+    public static class Gauge implements Metric  {
 
         final private io.prometheus.client.Gauge promMetric;
 
@@ -230,7 +230,7 @@ public class PrometheusMetrics {
         }
     }
 
-    static class Summary implements Metric  {
+    public static class Summary implements Metric  {
 
         final private io.prometheus.client.Summary promMetric;
 
@@ -247,7 +247,7 @@ public class PrometheusMetrics {
             return this;
         }
 
-        Context time() {
+        public Context time() {
             return new TimerContext( promMetric.startTimer() );
         }
 
@@ -266,7 +266,7 @@ public class PrometheusMetrics {
         }
     }
 
-    static class Histogram implements Metric  {
+    public static class Histogram implements Metric  {
 
         final private io.prometheus.client.Histogram promMetric;
 
@@ -274,7 +274,7 @@ public class PrometheusMetrics {
             this.promMetric = promMetric;
         }
 
-        Context time() {
+        public Context time() {
             return new TimerContext( promMetric.startTimer() );
         }
 

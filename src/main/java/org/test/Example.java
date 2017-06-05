@@ -1,6 +1,7 @@
 package org.test;
 
-import org.test.PrometheusMetrics.Context;
+import org.test.api.PrometheusMetrics;
+import org.test.api.PrometheusMetrics.Context;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
