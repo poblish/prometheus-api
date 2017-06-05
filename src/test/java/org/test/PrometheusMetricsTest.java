@@ -39,8 +39,7 @@ public class PrometheusMetricsTest {
         TestableTimeProvider.install();
 
         registry = new CollectorRegistry();
-        metrics = new PrometheusMetrics();
-        metrics.setCollectorRegistry(registry);
+        metrics = new PrometheusMetrics(registry);
 
         final Properties props = new Properties();
         try (Reader r = Files.newReader( new File("src/test/resources/app.properties"), Charsets.UTF_8)) {
