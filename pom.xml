@@ -59,4 +59,20 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <!-- Definitions of the repository endpoints to use for RELEASE/SNAPSHOT deployments. -->
+  <!-- NOTE: The Id is the same for both to allow deploying of snapshots and releases agains the same credentials -->
+  <distributionManagement>
+      <!-- Publish versioned releases here, invoked when using 'mvn deploy' command -->
+      <repository>
+          <id>nexus</id>
+          <name>Crunch releases</name>
+          <url>http://nexus.crunch.dev.local/content/repositories/releases/</url>
+      </repository>
+      <snapshotRepository>
+          <id>nexus</id>
+          <name>Internal Snapshots</name>
+          <url>http://nexus.crunch.dev.local/content/repositories/snapshots/</url>
+      </snapshotRepository>
+  </distributionManagement>
 </project>
