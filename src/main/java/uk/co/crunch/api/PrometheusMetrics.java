@@ -20,14 +20,17 @@ import static java.util.Optional.of;
 public class PrometheusMetrics {
     private final ConcurrentMap<String,Metric> metrics = new ConcurrentHashMap<String,Metric>();
     private final CollectorRegistry registry;
+    private final String metricNamePrefix;
     private Properties descriptionMappings = new Properties();
 
     public PrometheusMetrics() {
         this.registry = new CollectorRegistry(true);
+        this.metricNamePrefix = "";
     }
 
-    public PrometheusMetrics(final CollectorRegistry registry) {
+    public PrometheusMetrics(final CollectorRegistry registry, final String metricNamePrefix) {
         this.registry = checkNotNull(registry);
+        this.metricNamePrefix = fixIntendedName( checkNotNull(metricNamePrefix) ) + "_";
     }
 
     @VisibleForTesting
@@ -87,31 +90,35 @@ public class PrometheusMetrics {
 
     @SuppressWarnings("unchecked")
     private <T extends Metric> T getOrAdd(String name, Optional<String> desc, MetricBuilder<T> builder) {
-        final Metric metric = metrics.get(name);
+        final String adjustedName = metricNamePrefix + fixIntendedName(name);
+        final Metric metric = metrics.get(adjustedName);
         if (builder.isInstance(metric)) {
             return (T) metric;
         }
         else if (metric == null) {
             try {
-                final String description = desc.orElse( firstNonNull( descriptionMappings.getProperty(name), name) );
-                return register(name, builder.newMetric( fixIntendedName(name), description, this.registry));
+                final String description = desc.orElse( firstNonNull( descriptionMappings.getProperty(adjustedName), adjustedName) );
+                return register(adjustedName, builder.newMetric( adjustedName, description, this.registry));
             }
             catch (IllegalArgumentException e) {
                 if (e.getMessage().startsWith("Invalid metric name")) {
                     throw e;
                 }
 
-                final Metric added = metrics.get(name);
+                final Metric added = metrics.get(adjustedName);
                 if (builder.isInstance(added)) {
                     return (T) added;
                 }
             }
         }
-        throw new IllegalArgumentException(name + " is already used for a different type of metric");
+        throw new IllegalArgumentException(adjustedName + " is already used for a different type of metric");
     }
 
     private static String fixIntendedName(String name) {
-        return name.replace('.','_').replace('-','_').replace('#','_');
+        return name.replace('.','_')
+                .replace('-','_')
+                .replace('#','_')
+                .toLowerCase();
     }
 
     private <T extends Metric> T register(String name, T metric) throws IllegalArgumentException {
