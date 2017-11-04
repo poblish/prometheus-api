@@ -18,7 +18,7 @@ import static java.util.Optional.of;
 // FIXME Ideally want to inject application name into this (or create Spring wrapper)
 
 public class PrometheusMetrics {
-    private final ConcurrentMap<String,Metric> metrics = new ConcurrentHashMap<String,Metric>();
+    private final ConcurrentMap<String,Metric> metrics = new ConcurrentHashMap<>();
     private final CollectorRegistry registry;
     private final String metricNamePrefix;
     private io.prometheus.client.Counter errorCounter;
