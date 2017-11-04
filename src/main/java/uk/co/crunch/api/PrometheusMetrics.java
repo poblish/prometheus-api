@@ -21,6 +21,7 @@ public class PrometheusMetrics {
     private final ConcurrentMap<String,Metric> metrics = new ConcurrentHashMap<String,Metric>();
     private final CollectorRegistry registry;
     private final String metricNamePrefix;
+    private io.prometheus.client.Counter errorCounter;
     private Properties descriptionMappings = new Properties();
 
     public PrometheusMetrics() {
@@ -71,6 +72,14 @@ public class PrometheusMetrics {
         return getOrAdd(name, of(desc), MetricBuilder.GAUGES);
     }
 
+    public Error error(String name) {
+        return incrementError(name, empty());
+    }
+
+    public Error error(String name, String desc) {
+        return incrementError(name, of(desc));
+    }
+
 //    public void inc(String name) {
 //        // Increment, whether Counter or Gauge
 //        counter(name).inc();
@@ -112,6 +121,22 @@ public class PrometheusMetrics {
             }
         }
         throw new IllegalArgumentException(adjustedName + " is already used for a different type of metric");
+    }
+
+    private Error incrementError(final String name, Optional<String> desc) {
+        io.prometheus.client.Counter.Child counter = getErrorCounter(desc).labels(name);
+        counter.inc();
+        return new Error(counter);
+    }
+
+    @SuppressWarnings("unchecked")
+    private synchronized io.prometheus.client.Counter getErrorCounter(Optional<String> desc) {
+        if (this.errorCounter == null) {
+            final String adjustedName = metricNamePrefix + "errors";
+            final String description = desc.orElse( firstNonNull( descriptionMappings.getProperty(adjustedName), adjustedName) );
+            this.errorCounter = io.prometheus.client.Counter.build().name(adjustedName).help(description).labelNames("error_type").register(registry);
+        }
+        return this.errorCounter;
     }
 
     private static String fixIntendedName(String name) {
@@ -233,6 +258,19 @@ public class PrometheusMetrics {
         public Gauge dec(double incr) {
             this.promMetric.dec(incr);
             return this;
+        }
+    }
+
+    public static class Error implements Metric  {
+
+        final private io.prometheus.client.Counter.Child promMetric;
+
+        Error(final io.prometheus.client.Counter.Child promMetric) {
+            this.promMetric = promMetric;
+        }
+
+        public double count() {
+            return this.promMetric.get();
         }
     }
 

@@ -125,6 +125,21 @@ public class PrometheusMetricsTest {
     }
 
     @Test
+    public void testErrors() {
+        metrics.error("salesforce");
+        assertThat(registry.getSampleValue("myapp_errors", new String[]{"error_type"}, new String[]{"salesforce"})).isEqualTo(1.0d);
+
+        metrics.error("stripe_transaction", "Stripe transaction error");
+        assertThat(registry.getSampleValue("myapp_errors", new String[]{"error_type"}, new String[]{"stripe_transaction"})).isEqualTo(1.0d);
+
+        final PrometheusMetrics.Error stErr = metrics.error("stripe_transaction");
+        assertThat(stErr.count()).isEqualTo(2.0d);
+        assertThat(registry.getSampleValue("myapp_errors", new String[]{"error_type"}, new String[]{"stripe_transaction"})).isEqualTo(2.0d);
+
+        assertThat(registry.getSampleValue("myapp_errors", new String[]{"error_type"}, new String[]{"unknown"})).isNull();
+    }
+
+    @Test
     public void testGauge() {
         final double expected = System.nanoTime();
         assertThat(registry.getSampleValue("g_1")).isNull();
