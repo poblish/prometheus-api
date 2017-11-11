@@ -22,8 +22,12 @@ public class Example {
         metrics.gauge("Sessions.open").dec();
     }
 
+    public void onError(Object event) {
+        metrics.error("generic", "Generic errors");
+    }
+
     public String handleLogin() {
-        try (Context timer = metrics.timer("Sessions.handleLogin").time()) {
+        try (Context timer = metrics.timer("Sessions.handleLogin", "Login times").time()) {
             return "Login handled!";
         }
     }

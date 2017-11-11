@@ -44,6 +44,10 @@ public class PrometheusMetrics {
         return summary(name);
     }
 
+    public Summary timer(String name, String desc) {
+        return summary(name, desc);
+    }
+
     public Histogram histogram(String name) {
         return getOrAdd(name, empty(), MetricBuilder.HISTOGRAMS);
     }
@@ -54,6 +58,10 @@ public class PrometheusMetrics {
 
     public Summary summary(String name) {
         return getOrAdd(name, empty(), MetricBuilder.SUMMARIES);
+    }
+
+    public Summary summary(String name, String desc) {
+        return getOrAdd(name, of(desc), MetricBuilder.SUMMARIES);
     }
 
     public Counter counter(String name) {

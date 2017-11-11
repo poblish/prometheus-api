@@ -12,10 +12,10 @@ import uk.co.crunch.api.PrometheusMetrics.Context;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.Collections;
 import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.co.crunch.TestUtils.samplesString;
 
 // FIXME:
 // Class prefix?
@@ -25,9 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 // ==> Tidier to pull from properties file if name-mapping exists, else default them
 // Why not: metrics.timer("Test_calc1") instead of metrics.timer("Test_calc1").time() ??
 // What about quantiles?  https://github.com/prometheus/client_java#summary
-// More on Labels?  https://github.com/prometheus/client_java#labels
 // [rejected] Genericise Summary and Histogram <T>
-// Support Labels?? https://github.com/prometheus/client_java#labels
 // [rejected] Support Meters?? http://metrics.dropwizard.io/3.1.0/getting-started/
 
 public class PrometheusMetricsTest {
@@ -155,9 +153,5 @@ public class PrometheusMetricsTest {
 
         metrics.gauge("g_1").dec(1981);
         assertThat(registry.getSampleValue("myapp_g_1")).isEqualTo(expected - 1981);
-    }
-
-    private static String samplesString(CollectorRegistry registry) {
-        return Collections.list( registry.metricFamilySamples() ).toString();
     }
 }
