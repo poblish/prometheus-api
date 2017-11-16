@@ -151,7 +151,19 @@ public class PrometheusMetricsTest {
         metrics.gauge("g_1").dec();
         assertThat(registry.getSampleValue("myapp_g_1")).isEqualTo(expected);
 
-        metrics.gauge("g_1").dec(1981);
+        metrics.gauge("g_1", "desc").dec(1981);
         assertThat(registry.getSampleValue("myapp_g_1")).isEqualTo(expected - 1981);
+    }
+
+    @Test
+    public void testCannotReuseMetricName() {
+        metrics.counter("xxx", "My first counter");
+
+        try {
+            metrics.gauge("xxx");
+        }
+        catch (IllegalArgumentException e) {
+            assertThat(e.getMessage()).isEqualTo("myapp_xxx is already used for a different type of metric");
+        }
     }
 }

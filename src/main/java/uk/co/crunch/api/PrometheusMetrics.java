@@ -1,6 +1,7 @@
 package uk.co.crunch.api;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.prometheus.client.Collector;
 import io.prometheus.client.CollectorRegistry;
 
 import java.io.Closeable;
@@ -108,27 +109,24 @@ public class PrometheusMetrics {
     @SuppressWarnings("unchecked")
     private <T extends Metric> T getOrAdd(String name, Optional<String> desc, MetricBuilder<T> builder) {
         final String adjustedName = metricNamePrefix + fixIntendedName(name);
-        final Metric metric = metrics.get(adjustedName);
-        if (builder.isInstance(metric)) {
-            return (T) metric;
-        }
-        else if (metric == null) {
-            try {
-                final String description = desc.orElse( firstNonNull( descriptionMappings.getProperty(adjustedName), adjustedName) );
-                return register(adjustedName, builder.newMetric( adjustedName, description, this.registry));
-            }
-            catch (IllegalArgumentException e) {
-                if (e.getMessage().startsWith("Invalid metric name")) {
-                    throw e;
-                }
 
-                final Metric added = metrics.get(adjustedName);
-                if (builder.isInstance(added)) {
-                    return (T) added;
-                }
+        // Get/check existing local metric
+        final Metric metric = metrics.get(adjustedName);
+        if (metric != null) {
+            if (builder.isInstance(metric)) {
+                return (T) metric;
             }
+            throw new IllegalArgumentException(adjustedName + " is already used for a different type of metric");
         }
-        throw new IllegalArgumentException(adjustedName + " is already used for a different type of metric");
+
+        final String description = desc.orElse( firstNonNull( descriptionMappings.getProperty(adjustedName), adjustedName) );
+        final T newMetric = builder.newMetric( adjustedName, description, this.registry);
+
+        if (metrics.putIfAbsent(adjustedName, newMetric) != null) {
+            throw new IllegalArgumentException("A metric named " + adjustedName + " already exists");
+        }
+
+        return (T) newMetric;
     }
 
     private Error incrementError(final String name, Optional<String> desc) {
@@ -142,7 +140,7 @@ public class PrometheusMetrics {
         if (this.errorCounter == null) {
             final String adjustedName = metricNamePrefix + "errors";
             final String description = desc.orElse( firstNonNull( descriptionMappings.getProperty(adjustedName), adjustedName) );
-            this.errorCounter = io.prometheus.client.Counter.build().name(adjustedName).help(description).labelNames("error_type").register(registry);
+            this.errorCounter = registerPrometheusMetric( io.prometheus.client.Counter.build().name(adjustedName).help(description).labelNames("error_type").create(), registry);
         }
         return this.errorCounter;
     }
@@ -154,19 +152,11 @@ public class PrometheusMetrics {
                 .toLowerCase();
     }
 
-    private <T extends Metric> T register(String name, T metric) throws IllegalArgumentException {
-        if (metrics.putIfAbsent(name, metric) != null) {
-            throw new IllegalArgumentException("A metric named " + name + " already exists");
-        }
-
-        return metric;
-    }
-
     private interface MetricBuilder<T extends Metric> {
         MetricBuilder<Counter> COUNTERS = new MetricBuilder<Counter>() {
             @Override
             public Counter newMetric(final String name, final String desc, final CollectorRegistry registry) {
-                return new Counter( io.prometheus.client.Counter.build().name(name).help(desc).register(registry) );
+                return new Counter( registerPrometheusMetric(io.prometheus.client.Counter.build().name(name).help(desc).create(), registry) );
             }
 
             @Override
@@ -178,7 +168,7 @@ public class PrometheusMetrics {
         MetricBuilder<Gauge> GAUGES = new MetricBuilder<Gauge>() {
             @Override
             public Gauge newMetric(final String name, final String desc, final CollectorRegistry registry) {
-                return new Gauge( io.prometheus.client.Gauge.build().name(name).help(desc).register(registry) );
+                return new Gauge( registerPrometheusMetric( io.prometheus.client.Gauge.build().name(name).help(desc).create(), registry) );
             }
 
             @Override
@@ -190,7 +180,7 @@ public class PrometheusMetrics {
         MetricBuilder<Histogram> HISTOGRAMS = new MetricBuilder<Histogram>() {
             @Override
             public Histogram newMetric(final String name, final String desc, final CollectorRegistry registry) {
-                return new Histogram( io.prometheus.client.Histogram.build().name(name).help(desc).register(registry) );
+                return new Histogram( registerPrometheusMetric( io.prometheus.client.Histogram.build().name(name).help(desc).create(), registry) );
             }
 
             @Override
@@ -202,7 +192,7 @@ public class PrometheusMetrics {
         MetricBuilder<Summary> SUMMARIES = new MetricBuilder<Summary>() {
             @Override
             public Summary newMetric(final String name, final String desc, final CollectorRegistry registry) {
-                return new Summary( io.prometheus.client.Summary.build().name(name).help(desc).register(registry) );
+                return new Summary( registerPrometheusMetric( io.prometheus.client.Summary.build().name(name).help(desc).create(), registry) );
             }
 
             @Override
@@ -213,6 +203,18 @@ public class PrometheusMetrics {
 
         T newMetric(String name, String desc, final CollectorRegistry registry);
         boolean isInstance(Metric metric);
+    }
+
+    private static <T extends Collector> T registerPrometheusMetric(final T metric, CollectorRegistry registry) {
+        try {
+            registry.register(metric);
+        }
+        catch (IllegalArgumentException e) {
+            if (!e.getMessage().contains("Collector already registered")) {
+                throw e;
+            }
+        }
+        return metric;
     }
 
     private interface Metric {}
