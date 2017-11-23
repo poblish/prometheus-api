@@ -192,7 +192,16 @@ public class PrometheusMetrics {
         MetricBuilder<Summary> SUMMARIES = new MetricBuilder<Summary>() {
             @Override
             public Summary newMetric(final String name, final String desc, final CollectorRegistry registry) {
-                return new Summary( registerPrometheusMetric( io.prometheus.client.Summary.build().name(name).help(desc).create(), registry) );
+                return new Summary( registerPrometheusMetric( io.prometheus.client.Summary.build()
+                        .name(name)
+                        .help(desc)
+                        .quantile(0.5, 0.01)    // Median
+                        .quantile(0.75, 0.01)   // 75th percentile (1% tolerated error)
+                        .quantile(0.9, 0.01)    // 90th percentile
+                        .quantile(0.95, 0.01)   // 95th percentile
+                        .quantile(0.99, 0.01)   // 99th percentile
+                        .quantile(0.999, 0.01)  // 99.9th percentile
+                        .create(), registry) );
             }
 
             @Override

@@ -53,7 +53,8 @@ public class PrometheusMetricsTest {
             System.out.println("Hi");
         }
 
-        assertThat(samplesString(registry)).isEqualTo("[Name: myapp_test_timer_a Type: SUMMARY Help: myapp_test_timer_a Samples: [Name: myapp_test_timer_a_count LabelNames: [] labelValues: [] Value: 1.0, Name: myapp_test_timer_a_sum LabelNames: [] labelValues: [] Value: 1.979E-6]]");
+        assertThat(samplesString(registry)).startsWith("[Name: myapp_test_timer_a Type: SUMMARY Help: myapp_test_timer_a")
+                .contains("Name: myapp_test_timer_a_count LabelNames: [] labelValues: [] Value: 1.0, Name: myapp_test_timer_a_sum LabelNames: [] labelValues: [] Value: 1.979E-6]");
         assertThat(registry.getSampleValue("myapp_test_timer_a_sum") * 1E+9).isEqualByComparingTo(1979d);
     }
 
@@ -98,15 +99,22 @@ public class PrometheusMetricsTest {
             System.out.println("Second");
         }
 
-        assertThat(samplesString(registry)).isEqualTo("[Name: myapp_test_calc1 Type: SUMMARY Help: myapp_test_calc1 Samples: [Name: myapp_test_calc1_count LabelNames: [] labelValues: [] Value: 2.0, Name: myapp_test_calc1_sum LabelNames: [] labelValues: [] Value: 3.958E-6]]");
-        // assertThat(registry.getSampleValue("myapp_test_calc1")).isGreaterThan(9999);
+        assertThat(samplesString(registry)).startsWith("[Name: myapp_test_calc1 Type: SUMMARY Help: myapp_test_calc1 ")
+                .contains("Name: myapp_test_calc1 LabelNames: [quantile] labelValues: [0.5] Value: 1.979E-6")
+                .contains("Name: myapp_test_calc1 LabelNames: [quantile] labelValues: [0.75] Value: 1.979E-6")
+                .contains("Name: myapp_test_calc1 LabelNames: [quantile] labelValues: [0.9] Value: 1.979E-6")
+                .contains("Name: myapp_test_calc1 LabelNames: [quantile] labelValues: [0.95] Value: 1.979E-6")
+                .contains("Name: myapp_test_calc1 LabelNames: [quantile] labelValues: [0.99] Value: 1.979E-6")
+                .contains("Name: myapp_test_calc1 LabelNames: [quantile] labelValues: [0.999] Value: 1.979E-6")
+                .contains("Name: myapp_test_calc1_count LabelNames: [] labelValues: [] Value: 2.0")
+                .contains("Name: myapp_test_calc1_sum LabelNames: [] labelValues: [] Value: 3.958E-6");
     }
 
     @Test
     public void testSummaryObservations() {
         metrics.summary("Vals").observe(1212.213412).observe(3434.34234).observe(3.1415926535875);
 
-        assertThat(samplesString(registry)).isEqualTo("[Name: myapp_vals Type: SUMMARY Help: myapp_vals Samples: [Name: myapp_vals_count LabelNames: [] labelValues: [] Value: 3.0, Name: myapp_vals_sum LabelNames: [] labelValues: [] Value: 4649.697344653588]]");
+        assertThat(samplesString(registry)).contains("Name: myapp_vals_count LabelNames: [] labelValues: [] Value: 3.0, Name: myapp_vals_sum LabelNames: [] labelValues: [] Value: 4649.697344653588]");
     }
 
     @Test
