@@ -65,6 +65,12 @@ public class PrometheusMetricsTest {
         assertThat(registry.getSampleValue("myapp_response_sizes_sum")).isEqualByComparingTo(34535d);
     }
 
+    @Test
+    public void testPluggableDescriptions() {
+        metrics.gauge("sizes-with-desc").inc(198);
+        assertThat(samplesString(registry)).contains("Name: myapp_sizes_with_desc Type: GAUGE Help: Response Sizes なお知らせ (bytes) Samples");
+    }
+
     private String getTimedValueDemonstratingFriendlyTimingSyntax() {
         try (Context timer = metrics.histogram("Test_calc1").time()) {
             return "Hi";

@@ -119,7 +119,7 @@ public class PrometheusMetrics {
             throw new IllegalArgumentException(adjustedName + " is already used for a different type of metric");
         }
 
-        final String description = desc.orElse( firstNonNull( descriptionMappings.getProperty(adjustedName), adjustedName) );
+        final String description = desc.orElse( firstNonNull( descriptionMappings.getProperty(name), adjustedName) );
         final T newMetric = builder.newMetric( adjustedName, description, this.registry);
 
         if (metrics.putIfAbsent(adjustedName, newMetric) != null) {
