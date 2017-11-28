@@ -17,17 +17,6 @@ import java.util.Properties;
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.co.crunch.TestUtils.samplesString;
 
-// FIXME:
-// Class prefix?
-// [done] Handle dots in names, Perhaps real name = Class name + '_' + corrected supplied name
-// [partial] Descriptions?
-// ==> Allow them to be specified... but if not...
-// ==> Tidier to pull from properties file if name-mapping exists, else default them
-// Why not: metrics.timer("Test_calc1") instead of metrics.timer("Test_calc1").time() ??
-// What about quantiles?  https://github.com/prometheus/client_java#summary
-// [rejected] Genericise Summary and Histogram <T>
-// [rejected] Support Meters?? http://metrics.dropwizard.io/3.1.0/getting-started/
-
 public class PrometheusMetricsTest {
     private PrometheusMetrics metrics;
     private CollectorRegistry registry;
@@ -71,6 +60,7 @@ public class PrometheusMetricsTest {
         assertThat(samplesString(registry)).contains("Name: myapp_sizes_with_desc Type: GAUGE Help: Response Sizes なお知らせ (bytes) Samples");
     }
 
+    @SuppressWarnings({"UnusedReturnValue", "SameReturnValue"})
     private String getTimedValueDemonstratingFriendlyTimingSyntax() {
         try (Context timer = metrics.histogram("Test_calc1").time()) {
             return "Hi";

@@ -26,6 +26,7 @@ public class Example {
         metrics.error("generic", "Generic errors");
     }
 
+    @SuppressWarnings("SameReturnValue")
     public String handleLogin() {
         try (Context timer = metrics.timer("Sessions.handleLogin", "Login times").time()) {
             return "Login handled!";

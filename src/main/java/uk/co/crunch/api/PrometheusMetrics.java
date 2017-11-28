@@ -127,7 +127,7 @@ public class PrometheusMetrics {
             throw new IllegalArgumentException("A metric named " + adjustedName + " already exists");
         }
 
-        return (T) newMetric;
+        return newMetric;
     }
 
     private Error incrementError(final String name, Optional<String> desc) {
