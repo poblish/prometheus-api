@@ -3,6 +3,7 @@ package uk.co.crunch.api;
 import com.google.common.annotations.VisibleForTesting;
 import io.prometheus.client.Collector;
 import io.prometheus.client.CollectorRegistry;
+import uk.co.crunch.utils.PrometheusUtils;
 
 import java.io.Closeable;
 import java.util.Optional;
@@ -32,7 +33,7 @@ public class PrometheusMetrics {
 
     public PrometheusMetrics(final CollectorRegistry registry, final String metricNamePrefix) {
         this.registry = checkNotNull(registry);
-        this.metricNamePrefix = fixIntendedName( checkNotNull(metricNamePrefix) ) + "_";
+        this.metricNamePrefix = PrometheusUtils.normaliseName( checkNotNull(metricNamePrefix) ) + "_";
     }
 
     @VisibleForTesting
@@ -108,7 +109,7 @@ public class PrometheusMetrics {
 
     @SuppressWarnings("unchecked")
     private <T extends Metric> T getOrAdd(String name, Optional<String> desc, MetricBuilder<T> builder) {
-        final String adjustedName = metricNamePrefix + fixIntendedName(name);
+        final String adjustedName = metricNamePrefix + PrometheusUtils.normaliseName(name);
 
         // Get/check existing local metric
         final Metric metric = metrics.get(adjustedName);
@@ -143,13 +144,6 @@ public class PrometheusMetrics {
             this.errorCounter = registerPrometheusMetric( io.prometheus.client.Counter.build().name(adjustedName).help(description).labelNames("error_type").create(), registry);
         }
         return this.errorCounter;
-    }
-
-    private static String fixIntendedName(String name) {
-        return name.replace('.','_')
-                .replace('-','_')
-                .replace('#','_')
-                .toLowerCase();
     }
 
     private interface MetricBuilder<T extends Metric> {
