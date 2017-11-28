@@ -234,14 +234,12 @@ public class PrometheusMetrics {
             this.promMetric = promMetric;
         }
 
-        public Counter inc() {
+        public void inc() {
             this.promMetric.inc();
-            return this;
         }
 
-        public Counter inc(double incr) {
+        public void inc(double incr) {
             this.promMetric.inc(incr);
-            return this;
         }
     }
 
@@ -253,24 +251,20 @@ public class PrometheusMetrics {
             this.promMetric = promMetric;
         }
 
-        public Gauge inc() {
+        public void inc() {
             this.promMetric.inc();
-            return this;
         }
 
-        public Gauge inc(double incr) {
+        public void inc(double incr) {
             this.promMetric.inc(incr);
-            return this;
         }
 
-        public Gauge dec() {
+        public void dec() {
             this.promMetric.dec();
-            return this;
         }
 
-        public Gauge dec(double incr) {
+        public void dec(double incr) {
             this.promMetric.dec(incr);
-            return this;
         }
     }
 
