@@ -49,8 +49,8 @@ public class PrometheusMetricsTest {
 
     @Test
     public void testDropwizardHistogramCompatibility() {
-        metrics.histogram("response-sizes").update(34535);
-        assertThat(samplesString(registry)).isEqualTo("[Name: myapp_response_sizes Type: HISTOGRAM Help: myapp_response_sizes Samples: [Name: myapp_response_sizes_bucket LabelNames: [le] labelValues: [0.005] Value: 0.0, Name: myapp_response_sizes_bucket LabelNames: [le] labelValues: [0.01] Value: 0.0, Name: myapp_response_sizes_bucket LabelNames: [le] labelValues: [0.025] Value: 0.0, Name: myapp_response_sizes_bucket LabelNames: [le] labelValues: [0.05] Value: 0.0, Name: myapp_response_sizes_bucket LabelNames: [le] labelValues: [0.075] Value: 0.0, Name: myapp_response_sizes_bucket LabelNames: [le] labelValues: [0.1] Value: 0.0, Name: myapp_response_sizes_bucket LabelNames: [le] labelValues: [0.25] Value: 0.0, Name: myapp_response_sizes_bucket LabelNames: [le] labelValues: [0.5] Value: 0.0, Name: myapp_response_sizes_bucket LabelNames: [le] labelValues: [0.75] Value: 0.0, Name: myapp_response_sizes_bucket LabelNames: [le] labelValues: [1.0] Value: 0.0, Name: myapp_response_sizes_bucket LabelNames: [le] labelValues: [2.5] Value: 0.0, Name: myapp_response_sizes_bucket LabelNames: [le] labelValues: [5.0] Value: 0.0, Name: myapp_response_sizes_bucket LabelNames: [le] labelValues: [7.5] Value: 0.0, Name: myapp_response_sizes_bucket LabelNames: [le] labelValues: [10.0] Value: 0.0, Name: myapp_response_sizes_bucket LabelNames: [le] labelValues: [+Inf] Value: 1.0, Name: myapp_response_sizes_count LabelNames: [] labelValues: [] Value: 1.0, Name: myapp_response_sizes_sum LabelNames: [] labelValues: [] Value: 34535.0]]");
+        metrics.histogram("response-sizes").update(30000).update(4535);
+        assertThat(samplesString(registry)).isEqualTo("[Name: myapp_response_sizes Type: HISTOGRAM Help: myapp_response_sizes Samples: [Name: myapp_response_sizes_bucket LabelNames: [le] labelValues: [0.005] Value: 0.0, Name: myapp_response_sizes_bucket LabelNames: [le] labelValues: [0.01] Value: 0.0, Name: myapp_response_sizes_bucket LabelNames: [le] labelValues: [0.025] Value: 0.0, Name: myapp_response_sizes_bucket LabelNames: [le] labelValues: [0.05] Value: 0.0, Name: myapp_response_sizes_bucket LabelNames: [le] labelValues: [0.075] Value: 0.0, Name: myapp_response_sizes_bucket LabelNames: [le] labelValues: [0.1] Value: 0.0, Name: myapp_response_sizes_bucket LabelNames: [le] labelValues: [0.25] Value: 0.0, Name: myapp_response_sizes_bucket LabelNames: [le] labelValues: [0.5] Value: 0.0, Name: myapp_response_sizes_bucket LabelNames: [le] labelValues: [0.75] Value: 0.0, Name: myapp_response_sizes_bucket LabelNames: [le] labelValues: [1.0] Value: 0.0, Name: myapp_response_sizes_bucket LabelNames: [le] labelValues: [2.5] Value: 0.0, Name: myapp_response_sizes_bucket LabelNames: [le] labelValues: [5.0] Value: 0.0, Name: myapp_response_sizes_bucket LabelNames: [le] labelValues: [7.5] Value: 0.0, Name: myapp_response_sizes_bucket LabelNames: [le] labelValues: [10.0] Value: 0.0, Name: myapp_response_sizes_bucket LabelNames: [le] labelValues: [+Inf] Value: 2.0, Name: myapp_response_sizes_count LabelNames: [] labelValues: [] Value: 2.0, Name: myapp_response_sizes_sum LabelNames: [] labelValues: [] Value: 34535.0]]");
         assertThat(registry.getSampleValue("myapp_response_sizes_sum")).isEqualByComparingTo(34535d);
     }
 
@@ -62,7 +62,7 @@ public class PrometheusMetricsTest {
 
     @SuppressWarnings({"UnusedReturnValue", "SameReturnValue"})
     private String getTimedValueDemonstratingFriendlyTimingSyntax() {
-        try (Context timer = metrics.histogram("Test_calc1").time()) {
+        try (Context ignored = metrics.histogram("Test_calc1").time()) {
             return "Hi";
         }
     }
@@ -73,6 +73,10 @@ public class PrometheusMetricsTest {
 
         assertThat(samplesString(registry)).isEqualTo("[Name: myapp_test_calc1 Type: HISTOGRAM Help: myapp_test_calc1 Samples: [Name: myapp_test_calc1_bucket LabelNames: [le] labelValues: [0.005] Value: 1.0, Name: myapp_test_calc1_bucket LabelNames: [le] labelValues: [0.01] Value: 1.0, Name: myapp_test_calc1_bucket LabelNames: [le] labelValues: [0.025] Value: 1.0, Name: myapp_test_calc1_bucket LabelNames: [le] labelValues: [0.05] Value: 1.0, Name: myapp_test_calc1_bucket LabelNames: [le] labelValues: [0.075] Value: 1.0, Name: myapp_test_calc1_bucket LabelNames: [le] labelValues: [0.1] Value: 1.0, Name: myapp_test_calc1_bucket LabelNames: [le] labelValues: [0.25] Value: 1.0, Name: myapp_test_calc1_bucket LabelNames: [le] labelValues: [0.5] Value: 1.0, Name: myapp_test_calc1_bucket LabelNames: [le] labelValues: [0.75] Value: 1.0, Name: myapp_test_calc1_bucket LabelNames: [le] labelValues: [1.0] Value: 1.0, Name: myapp_test_calc1_bucket LabelNames: [le] labelValues: [2.5] Value: 1.0, Name: myapp_test_calc1_bucket LabelNames: [le] labelValues: [5.0] Value: 1.0, Name: myapp_test_calc1_bucket LabelNames: [le] labelValues: [7.5] Value: 1.0, Name: myapp_test_calc1_bucket LabelNames: [le] labelValues: [10.0] Value: 1.0, Name: myapp_test_calc1_bucket LabelNames: [le] labelValues: [+Inf] Value: 1.0, Name: myapp_test_calc1_count LabelNames: [] labelValues: [] Value: 1.0, Name: myapp_test_calc1_sum LabelNames: [] labelValues: [] Value: 1.979E-6]]");
         assertThat(registry.getSampleValue("myapp_test_calc1_sum") * 1E+9).isEqualByComparingTo(1979d);
+
+        // Update existing one
+        metrics.histogram("Test_calc1").update(0.00000032d);
+        assertThat(registry.getSampleValue("myapp_test_calc1_sum") * 1E+9).isEqualByComparingTo(2299d);
     }
 
     @Test
@@ -108,7 +112,7 @@ public class PrometheusMetricsTest {
 
     @Test
     public void testSummaryObservations() {
-        metrics.summary("Vals").observe(1212.213412).observe(3434.34234).observe(3.1415926535875);
+        metrics.summary("Vals").update(1212.213412).observe(3434.34234).observe(3.1415926535875);
 
         assertThat(samplesString(registry)).contains("Name: myapp_vals_count LabelNames: [] labelValues: [] Value: 3.0, Name: myapp_vals_sum LabelNames: [] labelValues: [] Value: 4649.697344653588]");
     }
@@ -139,6 +143,8 @@ public class PrometheusMetricsTest {
         assertThat(registry.getSampleValue("myapp_errors", new String[]{"error_type"}, new String[]{"stripe_transaction"})).isEqualTo(2.0d);
 
         assertThat(registry.getSampleValue("myapp_errors", new String[]{"error_type"}, new String[]{"unknown"})).isNull();
+
+        assertThat( metrics.error("stripe_transaction", "with desc this time").count() ).isEqualTo(3.0d);
     }
 
     @Test

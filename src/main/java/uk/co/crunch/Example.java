@@ -28,7 +28,7 @@ public class Example {
 
     @SuppressWarnings("SameReturnValue")
     public String handleLogin() {
-        try (Context timer = metrics.timer("Sessions.handleLogin", "Login times").time()) {
+        try (Context ignored = metrics.timer("Sessions.handleLogin", "Login times").time()) {
             return "Login handled!";
         }
     }
