@@ -54,4 +54,20 @@ public class AlertRulesTest {
         assertThat( AlertRulesGenerator.buildRulesFile(PrometheusVersion.V2_X, "Test", rules.groupName(), rules.value()).trim() )
                 .isEqualTo( Files.asCharSource(new File("src/test/resources/expectations/generated_rules.yml"), Charsets.UTF_8).read().trim() );
     }
+
+    @AlertRule(name = "rpsRule",
+            metricNames = "rps",
+            rule = "avg_over_time($1[1m]) / avg_over_time($1[24h]) * 100 > 200",
+            duration = "12h",
+            summary = "Summary",
+            description = "Desc",
+            confluenceLink = "/PLAT/pages/1976"
+    )
+    @Test
+    public void testExtra() throws IOException, NoSuchMethodException {
+        final AlertRule thisRule = this.getClass().getMethod("testExtra").getAnnotation(AlertRule.class);
+
+        assertThat( AlertRulesGenerator.buildRulesFile(PrometheusVersion.V2_X, "Test", "Untilted", thisRule).trim() )
+                .isEqualTo( Files.asCharSource(new File("src/test/resources/expectations/individual_rule.yml"), Charsets.UTF_8).read().trim() );
+    }
 }
