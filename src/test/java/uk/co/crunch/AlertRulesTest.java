@@ -8,6 +8,7 @@ import uk.co.crunch.api.AlertRule.Annotation;
 import uk.co.crunch.api.AlertRule.Label;
 import uk.co.crunch.api.AlertRule.Severity;
 import uk.co.crunch.api.AlertRules;
+import uk.co.crunch.api.PrometheusVersion;
 import uk.co.crunch.impl.AlertRulesGenerator;
 
 import java.io.File;
@@ -15,10 +16,10 @@ import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@AlertRules({
+@AlertRules(groupName="webapp.alerts", value={
     @AlertRule(name = "NginxIsDroppingConnections_Full",
         metricNames = "nginx_dropped_connections",
-        rule = "IF increase($1[1m]) > 0",
+        rule = "increase($1[1m]) > 0",
         duration = "2m",
         severity = Severity.WARNING,
         labels = {@Label(name = "extra", value = "blah")},
@@ -29,7 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
     ),
     @AlertRule(name = "RequestsPerSecondIncrease_Minimal",
         metricNames = "requests per second",
-        rule = "IF avg_over_time($1[1m]) / avg_over_time($1[24h]) * 100 > 150",
+        rule = "avg_over_time($1[1m]) / avg_over_time($1[24h]) * 100 > 150",
         duration = "5m",
         summary = "NGINX node {{ $labels.instance }} request rate has increased dramatically",
         description = "NGINX node {{ $labels.instance }} has an abnormal increase in request rate. This could either indicate a traffic spike/DDoS attempt, or a misbehaving upstream service",
@@ -39,10 +40,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class AlertRulesTest {
 
     @Test
-    public void testRules() throws IOException {
+    public void testGenerationV1X() throws IOException {
         final AlertRules rules = this.getClass().getAnnotation(AlertRules.class);
 
-        assertThat( AlertRulesGenerator.buildRulesFile("Test", rules.value()).trim() )
+        assertThat( AlertRulesGenerator.buildRulesFile(PrometheusVersion.V1_X, "Test", "???", rules.value()).trim() )
                 .isEqualTo( Files.asCharSource(new File("src/test/resources/expectations/generated_rules.rule"), Charsets.UTF_8).read().trim() );
+    }
+
+    @Test
+    public void testGenerationV2X() throws IOException {
+        final AlertRules rules = this.getClass().getAnnotation(AlertRules.class);
+
+        assertThat( AlertRulesGenerator.buildRulesFile(PrometheusVersion.V2_X, "Test", rules.groupName(), rules.value()).trim() )
+                .isEqualTo( Files.asCharSource(new File("src/test/resources/expectations/generated_rules.yml"), Charsets.UTF_8).read().trim() );
     }
 }

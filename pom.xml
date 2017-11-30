@@ -52,6 +52,12 @@
       <version>5.86.1.RELEASE</version>
       <optional>true</optional>
     </dependency>
+    <dependency>
+      <groupId>org.yaml</groupId>
+      <artifactId>snakeyaml</artifactId>
+      <version>1.19</version>
+      <optional>true</optional>
+    </dependency>
 
     <dependency>
       <groupId>junit</groupId>

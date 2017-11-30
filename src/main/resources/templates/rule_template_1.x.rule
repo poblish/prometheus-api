@@ -1,5 +1,5 @@
 ALERT {{ title(trim(prefix)) }}{{ title(trim(alertName)) }}
-  {{ rule }}
+  IF {{ rule }}
   FOR {{ duration }}
   LABELS {
     {{ labels }}

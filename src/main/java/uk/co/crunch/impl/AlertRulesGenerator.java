@@ -1,91 +1,59 @@
 package uk.co.crunch.impl;
 
-import com.google.common.base.Joiner;
-import org.jtwig.JtwigModel;
-import org.jtwig.JtwigTemplate;
 import uk.co.crunch.api.AlertRule;
+import uk.co.crunch.api.AlertRule.Annotation;
+import uk.co.crunch.api.AlertRule.Label;
+import uk.co.crunch.api.PrometheusVersion;
+import uk.co.crunch.impl.v1x.AlertRulesGenerator1x;
+import uk.co.crunch.impl.v2x.AlertRulesGenerator2x;
 import uk.co.crunch.utils.PrometheusUtils;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class AlertRulesGenerator {
 
-    private final static Joiner COMMAS = Joiner.on(",\n    ");
+    public static String buildRulesFile(final PrometheusVersion version, final String metricPrefix, final String alertGroupName, final AlertRule... rules) {
+        return version == PrometheusVersion.V2_X ? AlertRulesGenerator2x.buildRulesFile(metricPrefix, alertGroupName, rules) : AlertRulesGenerator1x.buildRulesFile(metricPrefix, rules);
+    }
 
-    public static String buildRulesFile(final String metricPrefix, final AlertRule... rules) {
-        final JtwigModel model = JtwigModel.newModel();
-        model.with("prefix", metricPrefix);
+    public static String replaceRulePlaceholders(final AlertRule rule, final String normalisedPrefix) {
+        String ruleStr = rule.rule();
+        for (int i = 0; i < rule.metricNames().length; ++i) {
+            final String rawName = rule.metricNames()[i];
+            final String missingPrefix = rawName.startsWith(normalisedPrefix) ? "" : normalisedPrefix;
 
-        final JtwigTemplate template = JtwigTemplate.classpathTemplate("templates/rule_template.rule");
+            ruleStr = ruleStr.replace("$" + (i + 1), missingPrefix + PrometheusUtils.normaliseName(rawName));
+        }
+        return ruleStr;
+    }
 
-        final List<String> ruleStrs = new ArrayList<>();
+    public static Map<String,String> getLabels(final AlertRule rule) {
+        final Map<String,String> labels = new LinkedHashMap<>();
+        labels.put("severity", rule.severity().toString().toLowerCase());
 
-        final String normalisedPrefix = PrometheusUtils.normaliseName(metricPrefix) + "_";
-
-        for (AlertRule eachRule : rules) {
-            String ruleStr = eachRule.rule();
-            for (int i = 0; i < eachRule.metricNames().length; ++i) {
-                final String rawName = eachRule.metricNames()[i];
-                final String missingPrefix = rawName.startsWith(normalisedPrefix) ? "" : normalisedPrefix;
-
-                ruleStr = ruleStr.replace("$" + (i + 1), missingPrefix + PrometheusUtils.normaliseName(rawName));
-            }
-
-            model.with("alertName", eachRule.name());
-            model.with("duration", eachRule.duration());
-            model.with("rule", ruleStr);
-
-            //////////////////////////////////////////////////////////////////////////////////////////
-
-            final Map<String,String> anns = new LinkedHashMap<>();
-            anns.put("summary", eachRule.summary());
-            anns.put("description", eachRule.description());
-
-            if (eachRule.confluenceLink().startsWith("/")) {
-                anns.put("confluence_link", "https://crunch.atlassian.net/wiki/spaces" + eachRule.confluenceLink());
-            } else {
-                anns.put("confluence_link", eachRule.confluenceLink());
-            }
-
-            for (AlertRule.Annotation ann : eachRule.annotations()) {
-                anns.putIfAbsent(ann.name(), ann.value());
-            }
-
-            model.with("annotations", entriesMapToString(anns));
-
-            //////////////////////////////////////////////////////////////////////////////////////////
-
-            final Map<String,String> labels = new LinkedHashMap<>();
-            labels.put("severity", eachRule.severity().toString().toLowerCase());
-
-            for (AlertRule.Label label : eachRule.labels()) {
-                labels.putIfAbsent(label.name(), label.value());
-            }
-
-            model.with("labels", entriesMapToString(labels));
-
-            //////////////////////////////////////////////////////////////////////////////////////////
-
-            ruleStrs.add(template.render(model));
+        for (Label label : rule.labels()) {
+            labels.putIfAbsent(label.name(), label.value());
         }
 
-        return Joiner.on("\n").join(ruleStrs);
+        return labels;
     }
 
-    private static CharSequence quoteString(final String s) {
-        return new StringBuilder(s.length() + 2).append("\"").append(s.replace("\"", "\\\"")).append("\"");
-    }
+    public static Map<String,String> getAnnotations(final AlertRule rule) {
+        final Map<String,String> anns = new LinkedHashMap<>();
+        anns.put("summary", rule.summary());
+        anns.put("description", rule.description());
 
-    private static Function<Map.Entry<String,String>,String> formatEntry() {
-        return entry -> entry.getKey() + " = " + quoteString(entry.getValue());
-    }
+        if (rule.confluenceLink().startsWith("/")) {
+            anns.put("confluence_link", "https://crunch.atlassian.net/wiki/spaces" + rule.confluenceLink());
+        } else {
+            anns.put("confluence_link", rule.confluenceLink());
+        }
 
-    private static String entriesMapToString(final Map<String,String> entries) {
-        return COMMAS.join(entries.entrySet().stream().map(formatEntry()).collect(Collectors.toList()));
+        for (Annotation ann : rule.annotations()) {
+            anns.putIfAbsent(ann.name(), ann.value());
+        }
+
+        return anns;
     }
 }

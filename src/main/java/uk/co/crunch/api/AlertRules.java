@@ -8,5 +8,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)  // Only RUNTIME for testability
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface AlertRules {
+    String groupName() default "";
     AlertRule[] value();
 }
