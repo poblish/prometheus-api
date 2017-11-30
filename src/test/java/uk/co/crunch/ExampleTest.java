@@ -27,7 +27,8 @@ public class ExampleTest {
         assertThat(registry.getSampleValue("example_sessions_open")).isNull();
         assertThat(registry.getSampleValue("example_errors", new String[]{"error_type"}, new String[]{"generic"})).isNull();
 
-        ex.handleLogin();
+        final String resp = ex.handleLogin();
+        assertThat(resp).isEqualTo("Login handled!");  // Fairly pointless, just for PiTest coverage %
         ex.onUserLogin("");
         assertThat(registry.getSampleValue("example_sessions_open")).isEqualTo(1);
 

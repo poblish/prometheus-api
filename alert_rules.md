@@ -12,8 +12,8 @@
 * Plugin can already identify metric usage, and will be able to read the `@AlertRule` annotations.
 * Providing the metric names can be parsed from the `rule` queries, it will be easy to compare the two sets.
 * Plugin will be able to validate some parts of the `@AlertRule` and auto/complete some parts, e.g. expand Confluence URLs, prepend 'prefix' to rule names
-* Plugin will aggregate all rules and export a single `.rule` (or possibly `.yaml`) file into the build.
-* Rule files exposed as artifacts which need to get aggregated and pushed to Prometheus
+* Plugin will aggregate all rules and export one or more rule files (either 1.x or 2.x YAML) file into the build.
+* Rule files exposed as artifacts, which need to get aggregated and pushed to Prometheus.
 
 ### Discussion points:
 
@@ -34,7 +34,7 @@
           metrics={"requests per second"},
           rule = "IF avg_over_time($1[1m]) ...",
 
-* 
+*
 
 ### Possible improvements:
 
