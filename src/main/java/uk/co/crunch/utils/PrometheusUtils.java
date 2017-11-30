@@ -5,6 +5,7 @@ public class PrometheusUtils {
         return name.replace('.','_')
                 .replace('-','_')
                 .replace('#','_')
+                .replace(' ','_')
                 .toLowerCase();
     }
 }

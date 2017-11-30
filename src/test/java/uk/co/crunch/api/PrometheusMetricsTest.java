@@ -1,4 +1,4 @@
-package uk.co.crunch;
+package uk.co.crunch.api;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
@@ -35,6 +35,15 @@ public class PrometheusMetricsTest {
 
         metrics.setDescriptionMappings(props);
     }
+
+    @Test
+    public void testDefaultConstructor() {
+        final PrometheusMetrics pm = new PrometheusMetrics();
+        pm.counter("counter_1").inc(1701);
+        assertThat(pm.registry.getSampleValue("counter_1")).isEqualTo(1701d);
+
+        assertThat(registry.getSampleValue("counter_1")).isNull();
+   }
 
     @Test
     public void testDropwizardTimerCompatibility() {

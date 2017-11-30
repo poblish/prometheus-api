@@ -1,8 +1,7 @@
-package uk.co.crunch;
+package uk.co.crunch.api;
 
 import io.prometheus.client.CollectorRegistry;
 import org.junit.Test;
-import uk.co.crunch.api.PrometheusMetrics;
 
 public class SharedRegistryTest {
     private CollectorRegistry registry = CollectorRegistry.defaultRegistry;

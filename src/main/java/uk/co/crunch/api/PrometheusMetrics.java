@@ -21,7 +21,10 @@ import static java.util.Optional.of;
 
 public class PrometheusMetrics {
     private final ConcurrentMap<String,Metric> metrics = new ConcurrentHashMap<>();
-    private final CollectorRegistry registry;
+
+    @VisibleForTesting
+    final CollectorRegistry registry;
+
     private final String metricNamePrefix;
     private io.prometheus.client.Counter errorCounter;
     private Properties descriptionMappings = new Properties();
