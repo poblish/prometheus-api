@@ -2,10 +2,12 @@
 
 * API geared aimed at application developers rather than Prometheus experts.
 * Name-based metrics; no need to create instances or handle registration.
-* Simpler, cleaner timer / histogram syntax, via resource/try
+* Cleaner timer / summary syntax, via resource/try
 * Aim is to simplify Prometheus adoption, reduce excessive code intrusion.
-* Lexical compatibility with Codahale/Dropwizard API for Barclays/Insurance, simplifying complete migration.
-* Prometheus API can be used directly for more advanced cases (hopefully not necessary)
+* Lexical compatibility with Codahale/Dropwizard Metrics API, simplifying complete migration.
+* Regular Prometheus API can always be used directly for more advanced cases (unclear what those might be).
+
+Also `@AlertRule` API for [defining alert rules in Java code](alert_rules.md) and exporting rules files to disk (Prometheus 1.x format, or YAML for 2.x).
 
 ## Example:
 
@@ -28,35 +30,90 @@ public String handleLogin() {
 
 #### Application prefix:
 
+Configure a common prefix...
+
 ```java
-@Value("${spring.application.name}")
-private String appName;
+@Value("${spring.application.name}")  // "MyApp"
+private String prefixToUse;
 
 @Bean
 public PrometheusMetrics prometheusMetrics(CollectorRegistry collector) {
-    return new PrometheusMetrics(collector, appName);
+    return new PrometheusMetrics(collector, prefixToUse);
 }
 ```
 
-#### Optional descriptions:
+All created metrics will use that (normalised) prefix:
 
 ```java
-metrics.timer("transaction");
-metrics.timer("transaction", "Transaction time");
+metrics.counter("counter_1").inc();
+assertThat(samplesString(registry)).startsWith("[Name: myapp_counter_1 Type: COUNTER ");
 ```
+
+---
+
+#### Helpful descriptions:
+
+Defaulted if not set:
+
+```java
+metrics.timer("transaction");  // ==> "transaction"
+
+metrics.timer("transaction", "Transaction time");  // ==> "Transaction time"
+```
+
+Alternatively, load a Java `Properties` file like:
+
+```
+transaction = Transaction time
+```
+
+when you create your PrometheusMetrics object, e.g.
+
+```java
+final Properties props = new Properties();
+try (Reader r = Files.newReader( new File("descriptions.properties"), Charsets.UTF_8)) {
+    props.load(r);
+}
+
+metrics.setDescriptionMappings(props);
+```
+
+Now you can use the simpler API:
+
+```java
+metrics.timer("transaction");  // ==> "Transaction time"
+```
+
+---
+
+#### More helpful `summary` quantiles:
+
+By default, summaries will get the following percentiles, rather than a simple median:
+
+50%, 75%, 90%, 95%, 99%, 99.9%
+
+---
 
 #### Error counts implemented via labels:
 
 ```java
 metrics.error("salesforce");
 
-assertThat(registry.getSampleValue("myapp_errors", new String[]{"error_type"}, new String[]{"salesforce"})).isEqualTo(1.0d);
-
+assertThat(registry.getSampleValue("myapp_errors", \
+                                    new String[]{"error_type"}, \
+                                    new String[]{"salesforce"})).isEqualTo(1.0d);
 // ...
 
-metrics.error("stripe_transaction");
+metrics.error("transaction");
 
-assertThat(registry.getSampleValue("myapp_errors", new String[]{"error_type"}, new String[]{"stripe_transaction"})).isEqualTo(1.0d);
+assertThat(registry.getSampleValue("myapp_errors", \
+                                    new String[]{"error_type"}, \
+                                    new String[]{"transaction"})).isEqualTo(1.0d);
 ```
 
+---
+
 #### All names sanitised to ensure no invalid characters
+
+* All names lowercased
+* `.`, `-`, `#`, ` ` seamlessly mapped to `_`
