@@ -1,5 +1,7 @@
 package uk.co.crunch.impl.v2x;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Splitter;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
@@ -15,6 +17,8 @@ import java.util.*;
 import static uk.co.crunch.impl.AlertRulesGenerator.*;
 
 public class AlertRulesGenerator2x {
+
+    private final static Splitter WORDS = Splitter.onPattern("[-_\\.]");
 
     public static String buildRulesFile(final String metricPrefix, final String alertGroupName, final AlertRule... rules) {
         final String normalisedPrefix = PrometheusUtils.normaliseName(metricPrefix) + "_";
@@ -40,8 +44,16 @@ public class AlertRulesGenerator2x {
         return new Yaml(new Constructor(), repr, dumper);
     }
 
-    private static String titlecase( final String s) {
-        return new StringBuilder(s.length()).append( Character.toTitleCase( s.charAt(0) ) ).append( s.substring(1) ).toString();
+    @VisibleForTesting
+    static String titlecase(final String s) {
+        if (s.isEmpty()) {
+            return "";
+        }
+        final StringBuilder sb = new StringBuilder(s.length());
+        for (String word : WORDS.splitToList(s)) {
+            sb.append( Character.toTitleCase( word.charAt(0) ) ).append( word.substring(1) );
+        }
+        return sb.toString();
     }
 
     // https://bitbucket.org/asomov/snakeyaml/src/tip/src/test/java/org/yaml/snakeyaml/issues/issue60/CustomOrderTest.java?fileviewer=file-view-default

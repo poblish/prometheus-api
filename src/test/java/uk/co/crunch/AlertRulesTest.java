@@ -67,7 +67,7 @@ public class AlertRulesTest {
     public void testExtra() throws IOException, NoSuchMethodException {
         final AlertRule thisRule = this.getClass().getMethod("testExtra").getAnnotation(AlertRule.class);
 
-        assertThat( AlertRulesGenerator.buildRulesFile(PrometheusVersion.V2_X, "Test", "Untilted", thisRule).trim() )
+        assertThat( AlertRulesGenerator.buildRulesFile(PrometheusVersion.V2_X, "audit-service", "Untilted", thisRule).trim() )
                 .isEqualTo( Files.asCharSource(new File("src/test/resources/expectations/individual_rule.yml"), Charsets.UTF_8).read().trim() );
     }
 }

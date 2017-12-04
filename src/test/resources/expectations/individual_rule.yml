@@ -1,8 +1,8 @@
 groups:
 - name: Untilted
   rules:
-  - alert: TestRpsRule
-    expr: avg_over_time(test_rps[1m]) / avg_over_time(test_rps[24h]) * 100 > 200
+  - alert: AuditServiceRpsRule
+    expr: avg_over_time(audit_service_rps[1m]) / avg_over_time(audit_service_rps[24h]) * 100 > 200
     duration: 12h
     labels:
       severity: page
