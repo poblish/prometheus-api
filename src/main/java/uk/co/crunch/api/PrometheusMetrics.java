@@ -207,7 +207,7 @@ public class PrometheusMetrics {
         try {
             registry.register(metric);
         }
-        catch (IllegalArgumentException e) {
+        catch (IllegalArgumentException e) {  // NOSONAR
             // Collector already registered - we ignore this
         }
         return metric;
