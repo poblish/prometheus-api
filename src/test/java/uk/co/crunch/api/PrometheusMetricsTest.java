@@ -6,7 +6,6 @@ import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.TestableTimeProvider;
 import org.junit.Before;
 import org.junit.Test;
-import uk.co.crunch.api.PrometheusMetrics;
 import uk.co.crunch.api.PrometheusMetrics.Context;
 
 import java.io.File;
@@ -15,6 +14,7 @@ import java.io.Reader;
 import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static uk.co.crunch.TestUtils.samplesString;
 
 public class PrometheusMetricsTest {
@@ -147,7 +147,7 @@ public class PrometheusMetricsTest {
         metrics.error("stripe_transaction", "Stripe transaction error");
         assertThat(registry.getSampleValue("myapp_errors", new String[]{"error_type"}, new String[]{"stripe_transaction"})).isEqualTo(1.0d);
 
-        final PrometheusMetrics.Error stErr = metrics.error("stripe_transaction");
+        final PrometheusMetrics.ErrorCounter stErr = metrics.error("stripe_transaction");
         assertThat(stErr.count()).isEqualTo(2.0d);
         assertThat(registry.getSampleValue("myapp_errors", new String[]{"error_type"}, new String[]{"stripe_transaction"})).isEqualTo(2.0d);
 
@@ -174,12 +174,14 @@ public class PrometheusMetricsTest {
         assertThat(registry.getSampleValue("myapp_g_1")).isEqualTo(expected - 1981);
     }
 
+    @SuppressWarnings("CheckReturnValue")
     @Test
     public void testCannotReuseMetricName() {
         metrics.counter("xxx", "My first counter");
 
         try {
             metrics.gauge("xxx");
+            fail("Should not pass");
         }
         catch (IllegalArgumentException e) {
             assertThat(e.getMessage()).isEqualTo("myapp_xxx is already used for a different type of metric");

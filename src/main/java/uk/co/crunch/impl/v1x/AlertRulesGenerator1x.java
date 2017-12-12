@@ -41,7 +41,7 @@ public class AlertRulesGenerator1x {
     }
 
     private static CharSequence quoteString(final String s) {
-        return new StringBuilder(s.length() + 2).append("\"").append(s.replace("\"", "\\\"")).append("\"");
+        return new StringBuilder().append("\"").append(s.replace("\"", "\\\"")).append("\"");
     }
 
     private static Function<Map.Entry<String,String>,String> formatEntry() {

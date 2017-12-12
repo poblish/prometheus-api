@@ -5,6 +5,7 @@ import io.prometheus.client.Collector;
 import io.prometheus.client.CollectorRegistry;
 import uk.co.crunch.utils.PrometheusUtils;
 
+import javax.annotation.CheckReturnValue;
 import java.io.Closeable;
 import java.util.Optional;
 import java.util.Properties;
@@ -45,70 +46,63 @@ public class PrometheusMetrics {
     }
 
     // Map Dropwizard Timer to a Prometheus Summary (I think)
+    @CheckReturnValue
     public Summary timer(String name) {
         return summary(name);
     }
 
+    @CheckReturnValue
     public Summary timer(String name, String desc) {
         return summary(name, desc);
     }
 
+    @CheckReturnValue
     public Histogram histogram(String name) {
         return getOrAdd(name, empty(), MetricBuilder.HISTOGRAMS);
     }
 
+    @CheckReturnValue
     public Histogram histogram(String name, String desc) {
         return getOrAdd(name, of(desc), MetricBuilder.HISTOGRAMS);
     }
 
+    @CheckReturnValue
     public Summary summary(String name) {
         return getOrAdd(name, empty(), MetricBuilder.SUMMARIES);
     }
 
+    @CheckReturnValue
     public Summary summary(String name, String desc) {
         return getOrAdd(name, of(desc), MetricBuilder.SUMMARIES);
     }
 
+    @CheckReturnValue
     public Counter counter(String name) {
         return getOrAdd(name, empty(), MetricBuilder.COUNTERS);
     }
 
+    @CheckReturnValue
     public Counter counter(String name, String desc) {
         return getOrAdd(name, of(desc), MetricBuilder.COUNTERS);
     }
 
+    @CheckReturnValue
     public Gauge gauge(String name) {
         return getOrAdd(name, empty(), MetricBuilder.GAUGES);
     }
 
+    @CheckReturnValue
     public Gauge gauge(String name, String desc) {
         return getOrAdd(name, of(desc), MetricBuilder.GAUGES);
     }
 
-    public Error error(String name) {
+    public ErrorCounter error(String name) {
         return incrementError(name, empty());
     }
 
-    public Error error(String name, String desc) {
+    public ErrorCounter error(String name, String desc) {
         return incrementError(name, of(desc));
     }
-
-//    public void inc(String name) {
-//        // Increment, whether Counter or Gauge
-//        counter(name).inc();
-//    }
-//
-//    public void inc(String name, double incr) {
-//        counter(name).inc(incr);
-//    }
-//
-//    public void dec(String name) {
-//        gauge(name).dec();
-//    }
-//
-//    public void dec(String name, double incr) {
-//        gauge(name).dec(incr);
-//    }
 
     @SuppressWarnings("unchecked")
     private <T extends Metric> T getOrAdd(String name, Optional<String> desc, MetricBuilder<T> builder) {
@@ -126,17 +120,15 @@ public class PrometheusMetrics {
         final String description = desc.orElse( firstNonNull( descriptionMappings.getProperty(name), adjustedName) );
         final T newMetric = builder.newMetric( adjustedName, description, this.registry);
 
-        if (metrics.putIfAbsent(adjustedName, newMetric) != null) {
-            throw new IllegalArgumentException("A metric named " + adjustedName + " already exists");
-        }
+        metrics.putIfAbsent(adjustedName, newMetric);
 
         return newMetric;
     }
 
-    private Error incrementError(final String name, Optional<String> desc) {
+    private ErrorCounter incrementError(final String name, Optional<String> desc) {
         io.prometheus.client.Counter.Child counter = getErrorCounter(desc).labels(name);
         counter.inc();
-        return new Error(counter);
+        return new ErrorCounter(counter);
     }
 
     @SuppressWarnings("unchecked")
@@ -216,9 +208,7 @@ public class PrometheusMetrics {
             registry.register(metric);
         }
         catch (IllegalArgumentException e) {
-            if (!e.getMessage().contains("Collector already registered")) {
-                throw e;
-            }
+            // Collector already registered - we ignore this
         }
         return metric;
     }
@@ -226,7 +216,7 @@ public class PrometheusMetrics {
     private interface Metric {}
 
     public interface Context extends Closeable {
-        void close();
+        @Override void close();
     }
 
     public static class Counter implements Metric  {
@@ -271,11 +261,11 @@ public class PrometheusMetrics {
         }
     }
 
-    public static class Error implements Metric  {
+    public static class ErrorCounter implements Metric  {
 
         final private io.prometheus.client.Counter.Child promMetric;
 
-        Error(final io.prometheus.client.Counter.Child promMetric) {
+        ErrorCounter(final io.prometheus.client.Counter.Child promMetric) {
             this.promMetric = promMetric;
         }
 

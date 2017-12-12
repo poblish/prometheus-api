@@ -6,6 +6,7 @@ import org.junit.Test;
 public class SharedRegistryTest {
     private CollectorRegistry registry = CollectorRegistry.defaultRegistry;
 
+    @SuppressWarnings("CheckReturnValue")
     @Test
     public void testExample() {
         final PrometheusMetrics metrics1 = new PrometheusMetrics(registry, "Example");
