@@ -1,5 +1,7 @@
 # Demonstration of an alternative Prometheus API
 
+[![Build Status](https://travis-ci.org/crunch-accounting/prometheus-api.svg?branch=master)](https://travis-ci.org/crunch-accounting/prometheus-api)
+
 * API geared aimed at application developers rather than Prometheus experts.
 * Name-based metrics; no need to create instances or handle registration.
 * Cleaner timer / summary syntax, via resource/try
