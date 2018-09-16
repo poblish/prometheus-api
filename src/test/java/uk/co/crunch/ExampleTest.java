@@ -15,7 +15,7 @@ public class ExampleTest {
     private CollectorRegistry registry;
 
     @Before
-    public void setUp() throws IOException {
+    public void setUp() {
         TestableTimeProvider.install();
         registry = new CollectorRegistry();
     }
@@ -39,9 +39,9 @@ public class ExampleTest {
         assertThat(registry.getSampleValue("example_errors", new String[]{"error_type"}, new String[]{"generic"})).isEqualTo(1.0d);
 
         final String contents = samplesString(registry);
-        assertThat(contents).contains("Name: example_errors Type: COUNTER Help: Generic errors Samples: [Name: example_errors LabelNames: [error_type] labelValues: [generic] Value: 1.0]");
+        assertThat(contents).contains("Name: example_errors Type: COUNTER Help: Generic errors Samples: [Name: example_errors LabelNames: [error_type] labelValues: [generic] Value: 1.0");
         assertThat(contents).contains("Name: example_sessions_handlelogin Type: SUMMARY Help: Login times");
-        assertThat(contents).contains("Name: example_sessions_handlelogin_count LabelNames: [] labelValues: [] Value: 1.0, Name: example_sessions_handlelogin_sum LabelNames: [] labelValues: [] Value: 1.979E-6]");
-        assertThat(contents).contains("Name: example_sessions_open Type: GAUGE Help: example_sessions_open Samples: [Name: example_sessions_open LabelNames: [] labelValues: [] Value: 0.0]");
+        assertThat(contents).contains("Name: example_sessions_handlelogin_count LabelNames: [] labelValues: [] Value: 1.0 TimestampMs: null, Name: example_sessions_handlelogin_sum LabelNames: [] labelValues: [] Value: 1.979E-6");
+        assertThat(contents).contains("Name: example_sessions_open Type: GAUGE Help: example_sessions_open Samples: [Name: example_sessions_open LabelNames: [] labelValues: [] Value: 0.0");
     }
 }
