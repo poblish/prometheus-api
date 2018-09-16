@@ -40,6 +40,10 @@ public class PrometheusMetrics {
         this.metricNamePrefix = PrometheusUtils.normaliseName( checkNotNull(metricNamePrefix) ) + "_";
     }
 
+    public void registerCustomCollector(final Collector collector) {
+        this.registry.register(collector);
+    }
+
     @VisibleForTesting
     public void setDescriptionMappings(final Properties props) {
         this.descriptionMappings = checkNotNull(props);

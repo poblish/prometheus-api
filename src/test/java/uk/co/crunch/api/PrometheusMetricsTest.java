@@ -2,8 +2,10 @@ package uk.co.crunch.api;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
+import io.prometheus.client.Collector;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.TestableTimeProvider;
+import io.prometheus.client.hotspot.StandardExports;
 import org.junit.Before;
 import org.junit.Test;
 import uk.co.crunch.api.PrometheusMetrics.Context;
@@ -172,6 +174,17 @@ public class PrometheusMetricsTest {
 
         metrics.gauge("g_1", "desc").dec(1981);
         assertThat(registry.getSampleValue("myapp_g_1")).isEqualTo(expected - 1981);
+    }
+
+    @Test
+    public void testHotspotExports() {
+        final Collector c = new StandardExports();
+        metrics.registerCustomCollector(c);
+        c.collect();  // Force collection
+        assertThat(samplesString(registry))
+                .contains("Name: process_cpu_seconds_total Type: COUNTER")
+                .contains("Name: process_cpu_seconds_total LabelNames")
+                .contains("Name: process_open_fds Type: GAUGE");
     }
 
     @SuppressWarnings("CheckReturnValue")
