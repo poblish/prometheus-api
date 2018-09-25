@@ -40,6 +40,10 @@ public class PrometheusMetrics {
         this.metricNamePrefix = PrometheusUtils.normaliseName( checkNotNull(metricNamePrefix) ) + "_";
     }
 
+    public void registerCustomCollector(final Collector collector) {
+        this.registry.register(collector);
+    }
+
     @VisibleForTesting
     public void setDescriptionMappings(final Properties props) {
         this.descriptionMappings = checkNotNull(props);
@@ -150,7 +154,7 @@ public class PrometheusMetrics {
 
             @Override
             public boolean isInstance(Metric metric) {
-                return Counter.class.isInstance(metric);
+                return metric instanceof Counter;
             }
         };
 
@@ -162,7 +166,7 @@ public class PrometheusMetrics {
 
             @Override
             public boolean isInstance(Metric metric) {
-                return Gauge.class.isInstance(metric);
+                return metric instanceof Gauge;
             }
         };
 
@@ -174,7 +178,7 @@ public class PrometheusMetrics {
 
             @Override
             public boolean isInstance(Metric metric) {
-                return Histogram.class.isInstance(metric);
+                return metric instanceof Histogram;
             }
         };
 
@@ -195,7 +199,7 @@ public class PrometheusMetrics {
 
             @Override
             public boolean isInstance(Metric metric) {
-                return Summary.class.isInstance(metric);
+                return metric instanceof Summary;
             }
         };
 
@@ -305,7 +309,7 @@ public class PrometheusMetrics {
 
             @Override
             public void close() {
-                requestTimer.observeDuration();
+                requestTimer.close();
             }
         }
     }

@@ -1,6 +1,5 @@
 package uk.co.crunch.impl.v1x;
 
-import com.google.common.base.Joiner;
 import org.jtwig.JtwigModel;
 import org.jtwig.JtwigTemplate;
 import uk.co.crunch.api.AlertRule;
@@ -15,7 +14,6 @@ import java.util.stream.Collectors;
 import static uk.co.crunch.impl.AlertRulesGenerator.*;
 
 public class AlertRulesGenerator1x {
-    private final static Joiner COMMAS = Joiner.on(",\n    ");
 
     public static String buildRulesFile(final String metricPrefix, final AlertRule... rules) {
         final JtwigModel model = JtwigModel.newModel();
@@ -37,7 +35,7 @@ public class AlertRulesGenerator1x {
             ruleStrs.add(template.render(model));
         }
 
-        return Joiner.on("\n").join(ruleStrs);
+        return String.join("\n", ruleStrs);
     }
 
     private static CharSequence quoteString(final String s) {
@@ -49,6 +47,6 @@ public class AlertRulesGenerator1x {
     }
 
     private static String entriesMapToString(final Map<String,String> entries) {
-        return COMMAS.join( entries.entrySet().stream().map( formatEntry() ).collect( Collectors.toList() ) );
+        return entries.entrySet().stream().map( formatEntry() ).collect( Collectors.joining(",\n    ") );
     }
 }

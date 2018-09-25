@@ -76,11 +76,11 @@ public class AlertRulesGenerator2x {
         private final String name;
         private final List<AlertRulePojo> rules = new ArrayList<>();
 
-        public AlertRulesGroup(String alertGroupName) {
+        AlertRulesGroup(String alertGroupName) {
             this.name = alertGroupName;
         }
 
-        public void addRule(AlertRulePojo rule) {
+        void addRule(AlertRulePojo rule) {
             this.rules.add(rule);
         }
     }
@@ -92,7 +92,7 @@ public class AlertRulesGenerator2x {
         Map<String,String> labels;
         Map<String,String> annotations;
 
-        public AlertRulePojo(String alert, String expr, String duration, Map<String,String> labels, Map<String,String> annotations) {
+        AlertRulePojo(String alert, String expr, String duration, Map<String,String> labels, Map<String,String> annotations) {
             this.alert = alert;
             this.expr = expr;
             this.duration = duration;
